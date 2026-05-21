@@ -1,316 +1,245 @@
-### Taller sobre Multi-threading en Java
+# Taller de Multi-threading en Java
 
-#### Objetivo
-El objetivo de este taller es aprender los conceptos fundamentales de multi-threading en Java, implementando ejemplos prácticos para entender cómo manejar múltiples hilos en una aplicación Java.
+> **Equipo:**
+> - Brayan Presiga Sepulveda - 0000301424
+> - Juan David Sanchez Roldan - 0000340321
+> - Yuly Dayana Rodríguez Salcedo - 0000305314
+---
 
-#### Pre-requisitos
-- Conocimientos básicos de Java.
-- Familiaridad con conceptos de concurrencia y threading.
+# Descripción
 
-### Paso 1: Configuración del Proyecto
+Este proyecto corresponde a un taller práctico sobre **multi-threading en Java**, desarrollado con Maven.  
 
-#### Configuración del `pom.xml`
-Para este taller, podemos utilizar una configuración básica de Maven:
+El objetivo principal es comprender cómo funcionan los hilos en Java y cómo pueden utilizarse para ejecutar múltiples tareas de manera concurrente.
 
-```xml
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+Durante el taller se implementaron diferentes estrategias de concurrencia utilizando:
 
-    <groupId>com.example</groupId>
-    <artifactId>multi-threading</artifactId>
-    <version>1.0-SNAPSHOT</version>
+- `Thread`
+- `Runnable`
+- `synchronized`
+- `ExecutorService`
+- `Callable`
 
-    <dependencies>
-        <!-- Dependencias estándar -->
-    </dependencies>
+Además, se desarrolló un ejemplo propio llamado **ProcesadorPedidos**, el cual simula el procesamiento concurrente de pedidos.
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+---
+
+# Objetivos
+
+- Comprender el funcionamiento de los hilos en Java.
+- Aprender a crear y gestionar múltiples hilos.
+- Implementar sincronización entre hilos.
+- Utilizar pools de hilos con `ExecutorService`.
+- Manejar tareas con retorno usando `Callable` y `Future`.
+- Aplicar los conceptos en un caso práctico.
+
+---
+
+# Tecnologías Utilizadas
+
+- Java 8+
+- Maven
+- Visual Studio Code
+
+---
+
+# Estructura del Proyecto
+
+```plaintext
+multi-threading/
+│
+├── pom.xml
+│
+└── src/
+    └── main/
+        └── java/
+            └── com/
+                └── example/
+                    ├── App.java
+                    ├── ThreadExample.java
+                    ├── RunnableExample.java
+                    ├── SynchronizedExample.java
+                    ├── ExecutorServiceExample.java
+                    ├── CallableExample.java
+                    └── ProcesadorPedidos.java
 ```
 
-### Paso 2: Ejemplos de Multi-threading en Java
+---
 
-#### 1. Creación de Hilos con `Thread`
+# Configuración del Proyecto
 
-**Código:**
+## Crear el proyecto Maven
 
-```java
-public class ThreadExample {
-    public static void main(String[] args) {
-        Thread thread = new Thread(() -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Thread: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start(); // Inicia el hilo
-    }
-}
+```bash
+mvn archetype:generate -DgroupId=com.example -DartifactId=multi-threading -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
 ```
 
-**Explicación:**
-- Se crea un nuevo hilo utilizando la clase `Thread`.
-- La lógica del hilo se define dentro de un bloque `Runnable` proporcionado al constructor de `Thread`.
-- El hilo imprime un contador de 0 a 4, pausando por 1 segundo entre cada impresión.
-- `thread.start()` inicia la ejecución del hilo.
+---
 
-#### 2. Creación de Hilos con `Runnable`
+# Compilación del Proyecto
 
-**Código:**
+Para compilar el proyecto:
 
-```java
-public class RunnableExample {
-    public static void main(String[] args) {
-        Runnable task = () -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Runnable: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        Thread thread = new Thread(task); // Crea un hilo con el Runnable
-        thread.start(); // Inicia el hilo
-    }
-}
+```bash
+mvn clean compile
 ```
 
-**Explicación:**
-- Se define una tarea `Runnable` que imprime un contador de 0 a 4, pausando por 1 segundo entre cada impresión.
-- Se crea un nuevo hilo utilizando el `Runnable` como argumento para el constructor de `Thread`.
-- `thread.start()` inicia la ejecución del hilo.
+---
 
-#### 3. Sincronización de Hilos
+# Ejecución de los Ejemplos
 
-**Código:**
+## 1. Ejemplo con Thread
 
-```java
-public class SynchronizedExample {
-    private static int counter = 0;
-
-    public static synchronized void increment() {
-        counter++;
-    }
-
-    public static void main(String[] args) {
-        Runnable task = () -> {
-            for (int i = 0; i < 1000; i++) {
-                increment(); // Incrementa el contador de manera sincronizada
-            }
-        };
-
-        Thread thread1 = new Thread(task);
-        Thread thread2 = new Thread(task);
-
-        thread1.start();
-        thread2.start();
-
-        try {
-            thread1.join(); // Espera a que thread1 termine
-            thread2.join(); // Espera a que thread2 termine
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Counter: " + counter); // Imprime el valor final del contador
-    }
-}
+```bash
+mvn exec:java -Dexec.mainClass="com.example.ThreadExample"
 ```
 
-**Explicación:**
-- Se define un método `increment()` que incrementa un contador de manera sincronizada.
-- Dos hilos ejecutan una tarea que llama al método `increment()` 1000 veces.
-- `thread1.join()` y `thread2.join()` aseguran que el programa principal espere a que ambos hilos terminen antes de continuar.
-- El valor final del contador se imprime al final.
+### Explicación
 
-#### 4. Uso de `ExecutorService`
+Este ejemplo muestra la creación básica de un hilo utilizando la clase `Thread`.
 
-**Código:**
+---
 
-```java
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+## 2. Ejemplo con Runnable
 
-public class ExecutorServiceExample {
-    public static void main(String[] args) {
-        ExecutorService executor = Executors.newFixedThreadPool(2); // Crea un pool de 2 hilos
-
-        Runnable task1 = () -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Task 1: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        Runnable task2 = () -> {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("Task 2: " + i);
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        executor.submit(task1); // Envía la tarea 1 al pool de hilos
-        executor.submit(task2); // Envía la tarea 2 al pool de hilos
-
-        executor.shutdown(); // Finaliza el pool de hilos una vez completadas las tareas
-    }
-}
+```bash
+mvn exec:java -Dexec.mainClass="com.example.RunnableExample"
 ```
 
-**Explicación:**
-- Se crea un `ExecutorService` con un pool de 2 hilos.
-- Se definen dos tareas `Runnable` que imprimen un contador de 0 a 4, pausando por 1 segundo entre cada impresión.
-- Las tareas se envían al pool de hilos utilizando `executor.submit()`.
-- `executor.shutdown()` finaliza el pool de hilos una vez que todas las tareas han sido completadas.
+### Explicación
 
-#### 5. Uso de `Callable` y `Future`
+Se implementa una tarea mediante la interfaz `Runnable` y luego se ejecuta en un hilo.
 
-**Código:**
+---
 
-```java
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+## 3. Ejemplo de Sincronización
 
-public class CallableExample {
-    public static void main(String[] args) {
-        ExecutorService executor = Executors.newFixedThreadPool(2); // Crea un pool de 2 hilos
-
-        Callable<Integer> task = () -> {
-            int sum = 0;
-            for (int i = 0; i < 5; i++) {
-                sum += i;
-                try {
-                    Thread.sleep(1000); // Pausa el hilo por 1 segundo
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return sum; // Retorna la suma de los números
-        };
-
-        Future<Integer> future = executor.submit(task); // Envía la tarea y recibe un Future
-
-        try {
-            Integer result = future.get(); // Obtiene el resultado de la tarea
-            System.out.println("Sum: " + result); // Imprime el resultado
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        executor.shutdown(); // Finaliza el pool de hilos
-    }
-}
+```bash
+mvn exec:java -Dexec.mainClass="com.example.SynchronizedExample"
 ```
 
-**Explicación:**
-- Se crea un `ExecutorService` con un pool de 2 hilos.
-- Se define una tarea `Callable` que calcula la suma de los números del 0 al 4, pausando por 1 segundo entre cada iteración.
-- La tarea se envía al pool de hilos utilizando `executor.submit()`, y se recibe un `Future` que representará el resultado de la tarea.
-- `future.get()` se utiliza para obtener el resultado de la tarea una vez que se ha completado.
-- `executor.shutdown()` finaliza el pool de hilos una vez que todas las tareas han sido completadas.
+### Explicación
 
-### Paso 3: Crear un Ejemplo Propio
+Demuestra el uso de `synchronized` para evitar problemas de concurrencia al modificar variables compartidas.
 
-**Instrucciones para los Estudiantes:**
+---
 
-1. **Definir un Caso de Uso:**
-   - Piensa en un escenario donde el multi-threading pueda ser útil. Por ejemplo, procesamiento paralelo de datos, tareas de I/O concurrentes, etc.
-2. **Seleccionar la Estrategia de Multi-threading:**
-   - Elige la estrategia de multi-threading adecuada para tu caso de uso (`Thread`, `Runnable`, `ExecutorService`, etc.).
-3. **Implementar el Ejemplo:**
-   - Implementa tu ejemplo en Java utilizando la estrategia seleccionada.
-   - Asegúrate de comentar tu código para explicar qué hace cada parte y cómo se gestionan los hilos.
-4. **Probar y Depurar:**
-   - Ejecuta tu código y verifica que funcione como esperas. Asegúrate de manejar cualquier posible error.
-5. **Compartir y Discutir:**
-   - Comparte tu código con los demás estudiantes del taller. Discutan sobre las diferentes implementaciones y enfoques utilizados.
+## 4. Ejemplo con ExecutorService
 
-**Ejemplo de Código para los Estudiantes:**
-
-Aquí tienes un ejemplo sencillo para inspirarte. Supongamos que queremos procesar una lista de tareas en paralelo y sumar los resultados.
-
-```java
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-public class CustomThreadExample {
-    public static void main(String[] args) {
-        List<Callable<Integer>> tasks = Arrays.asList(
-                () -> { Thread.sleep(1000); return 10; },
-                () -> { Thread.sleep(1000); return 20; },
-                () -> { Thread.sleep(1000); return 30; }
-        );
-
-        ExecutorService executor = Executors.newFixedThreadPool(3);
-
-        try {
-            List<Future<Integer>> results = executor.invokeAll(tasks);
-            int sum = 0;
-            for (Future<Integer> result : results) {
-                sum += result.get();
-            }
-            System.out.println("Sum: " + sum);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        } finally {
-            executor.shutdown();
-        }
-    }
-}
+```bash
+mvn exec:java -Dexec.mainClass="com.example.ExecutorServiceExample"
 ```
 
-### Paso 4: Resumen y Conclusión
+### Explicación
 
-#### Resumen del Taller
-- Aprendimos a utilizar diversas estrategias de multi-threading en Java: `Thread`, `Runnable`, `synchronized`, `ExecutorService`, `Callable`, y `Future`.
-- Implementamos ejemplos prácticos para entender cómo manejar y sincronizar múltiples hilos en una aplicación Java.
-- Los estudiantes crearon sus propios ejemplos para aplicar lo aprendido.
+Se utiliza un pool de hilos para gestionar múltiples tareas concurrentes de manera más eficiente.
 
-#### Conclusión
-El multi-threading es una poderosa herramienta para mejorar el rendimiento y la capacidad de respuesta de las aplicaciones. Las estrategias y técnicas que hemos explorado en este taller son fundamentales para construir aplicaciones concurrentes y escalables. Continuar practicando con estos conceptos y explorando otros aspectos de la concurrencia te permitirá construir aplicaciones más robustas y eficientes.
+---
 
-### Ejecución del Taller
-1. Configura tu entorno de desarrollo con las dependencias necesarias.
-2. Implementa y ejecuta cada ejemplo de multi-threading en Java.
-3. Crea y comparte tu propio ejemplo utilizando las estrategias aprendidas.
-4. Experimenta con otras técnicas de concurrencia y casos de uso para profundizar en tu comprensión del multi-threading.
+## 5. Ejemplo con Callable y Future
 
-Este taller proporciona una base sólida para comenzar a trabajar con multi-threading en Java y fomenta la creación de ejemplos propios para reforzar el aprendizaje.
+```bash
+mvn exec:java -Dexec.mainClass="com.example.CallableExample"
+```
+
+### Explicación
+
+Permite ejecutar tareas que retornan resultados utilizando `Callable` y recuperar dichos resultados mediante `Future`.
+
+---
+
+# Ejemplo Propio: Procesador de Pedidos
+
+## Ejecución
+
+```bash
+mvn exec:java -Dexec.mainClass="com.example.ProcesadorPedidos"
+```
+
+---
+
+## Descripción
+
+Este ejemplo simula el procesamiento concurrente de pedidos en una empresa.
+
+Cada pedido es procesado por un hilo diferente utilizando un `ExecutorService`, permitiendo que varias tareas se ejecuten simultáneamente.
+
+---
+
+## Funcionamiento
+
+- Se crea una lista de pedidos.
+- Se define un pool de 3 hilos.
+- Cada pedido se envía al pool mediante `submit()`.
+- Los pedidos se procesan en paralelo.
+- Cada hilo muestra qué pedido está ejecutando.
+
+---
+
+## Conceptos Aplicados
+
+- Multi-threading
+- Concurrencia
+- Pool de hilos
+- ExecutorService
+- Manejo de tareas concurrentes
+
+---
+
+# Resultados Esperados
+
+Al ejecutar los ejemplos, se observará:
+
+- Ejecución concurrente de tareas.
+- Diferentes hilos trabajando simultáneamente.
+- Sincronización correcta de recursos compartidos.
+- Procesamiento paralelo de pedidos.
+
+---
+
+# Problemas Encontrados
+
+Durante el desarrollo se presentaron algunos problemas comunes:
+
+## Error de paquetes
+
+```plaintext
+The declared package does not match the expected package
+```
+
+### Solución
+
+Organizar correctamente las carpetas:
+
+```plaintext
+src/main/java/com/example/
+```
+
+---
+
+## Error ClassNotFoundException
+
+```plaintext
+java.lang.ClassNotFoundException
+```
+
+### Solución
+
+- Verificar la ubicación del archivo `.java`
+- Confirmar el `package com.example;`
+- Compilar nuevamente con:
+
+```bash
+mvn clean compile
+```
+
+---
+
+# Conclusiones
+
+- El multi-threading permite mejorar el rendimiento de las aplicaciones.
+- Java ofrece múltiples herramientas para gestionar concurrencia.
+- `ExecutorService` facilita la administración de hilos.
+- La sincronización es importante para evitar inconsistencias en datos compartidos.
+- Los ejemplos prácticos ayudan a comprender mejor el comportamiento concurrente.
+
